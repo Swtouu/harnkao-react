@@ -148,7 +148,11 @@ body {
   font-family: inherit; outline: none;
   color-scheme: dark;
 }
-.trip-date-input:focus { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.4); }
+.trip-date-input:focus,
+.trip-date-input:hover {
+  background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.4);
+  box-shadow: none;
+}
 .trip-date-sep { color: rgba(255,255,255,0.45); font-size: 0.75rem; flex-shrink: 0; }
 
 .currency-pill {
@@ -207,6 +211,136 @@ body {
 .dot-cache { background: #FF9800; box-shadow: 0 0 0 2px rgba(255,152,0,0.25); }
 .dot-off   { background: var(--text-hint); }
 .rate-status { margin-left: auto; font-size: 0.72rem; color: var(--text-hint); }
+
+/* ══════════════════════════════════════════
+   DATE PICKER
+══════════════════════════════════════════ */
+.datepicker-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.datepicker-trigger {
+  -webkit-appearance: none; appearance: none;
+  padding: 0.55rem 0.8rem;
+  border: 1.5px solid var(--border-soft);
+  border-radius: var(--radius);
+  font-size: 0.88rem; font-family: inherit;
+  background: var(--surface); color: var(--text);
+  outline: none; cursor: pointer;
+  text-align: left; white-space: nowrap;
+  display: flex; align-items: center;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.3s, color 0.3s;
+}
+.datepicker-trigger:focus,
+.datepicker-trigger:hover {
+  border-color: var(--lilac-deep);
+  box-shadow: 0 0 0 3px rgba(160,144,186,0.2);
+}
+.dp-placeholder { color: var(--text-hint); }
+
+/* Popover */
+.datepicker-popover {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 200;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 0.7rem;
+  width: 244px;
+  user-select: none;
+  transition: background 0.3s;
+}
+.datepicker-popover.dp-align-right { left: auto; right: 0; }
+
+/* Header row inside popover */
+.dp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.dp-nav {
+  background: var(--surface2); border: 1px solid var(--border-soft);
+  border-radius: 8px; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1.1rem; line-height: 1;
+  color: var(--text-muted); font-family: inherit; padding: 0;
+  transition: background 0.12s, color 0.12s;
+}
+.dp-nav:hover { background: var(--surface3); color: var(--text); }
+.dp-title {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.87rem; font-weight: 600; color: var(--text);
+  font-family: inherit; padding: 0.18rem 0.5rem;
+  border-radius: 6px; transition: background 0.12s;
+  display: flex; align-items: center;
+}
+.dp-title:hover { background: var(--surface2); }
+
+/* Day-of-week labels */
+.dp-dow-row {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.2rem;
+}
+.dp-dow-row span {
+  text-align: center; font-size: 0.62rem; font-weight: 700;
+  color: var(--text-hint); padding: 0.1rem 0;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* Days grid */
+.dp-days-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.dp-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-family: inherit;
+  background: none; border: none; border-radius: 7px;
+  cursor: pointer; color: var(--text);
+  transition: background 0.1s, color 0.1s;
+}
+.dp-day:hover { background: var(--surface2); }
+.dp-day.dp-today { font-weight: 700; color: var(--grad-a); }
+.dp-day.dp-sel {
+  background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+  color: #fff; font-weight: 700;
+}
+.dp-day.dp-sel:hover { opacity: 0.88; }
+
+/* Months grid */
+.dp-months-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+}
+.dp-month {
+  padding: 0.5rem 0; text-align: center;
+  font-size: 0.83rem; font-family: inherit; font-weight: 500;
+  background: none; border: none; border-radius: 8px;
+  cursor: pointer; color: var(--text);
+  transition: background 0.1s;
+}
+.dp-month:hover { background: var(--surface2); }
+.dp-month.dp-sel {
+  background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+  color: #fff; font-weight: 700;
+}
+
+/* Years grid */
+.dp-years-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+}
+.dp-year {
+  padding: 0.48rem 0; text-align: center;
+  font-size: 0.8rem; font-family: inherit; font-weight: 500;
+  background: none; border: none; border-radius: 8px;
+  cursor: pointer; color: var(--text);
+  transition: background 0.1s;
+}
+.dp-year:hover { background: var(--surface2); }
+.dp-year.dp-sel {
+  background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+  color: #fff; font-weight: 700;
+}
 
 /* ══════════════════════════════════════════
    TAB BAR

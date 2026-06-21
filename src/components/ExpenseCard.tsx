@@ -2,6 +2,7 @@ import { useTripStore } from '../store/tripStore'
 import { useCurrencyStore } from '../store/currencyStore'
 import { CURRENCIES, CATEGORIES, CAT_EMOJI, SYM, NODEC, AVATAR_CLASSES } from '../constants'
 import { formatTHB } from '../services/currencyService'
+import DatePicker from './DatePicker'
 import type { Expense } from '../models'
 
 interface Props {
@@ -126,11 +127,11 @@ export default function ExpenseCard({ expense: e, index }: Props) {
             </select>
           </div>
 
-          <input
-            className="field-date"
-            type="date"
+          <DatePicker
             value={e.date}
-            onChange={ev => updateExpense(e.id, 'date', ev.target.value)}
+            onChange={v => updateExpense(e.id, 'date', v)}
+            placeholder="Date"
+            className="field-date"
           />
 
           <div className="payer-wrap">

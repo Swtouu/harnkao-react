@@ -3,6 +3,7 @@ import { useTripStore } from '../store/tripStore'
 import { useCurrencyStore } from '../store/currencyStore'
 import { CURRENCIES } from '../constants'
 import TripsModal from './TripsModal'
+import DatePicker from './DatePicker'
 
 interface Props {
   theme: 'light' | 'dark'
@@ -78,18 +79,19 @@ export default function AppHeader({ theme, onToggleTheme }: Props) {
               onChange={e => updateTripMeta('tripName', e.target.value)}
             />
             <div className="trip-dates-row">
-              <input
-                className="trip-date-input"
-                type="date"
+              <DatePicker
                 value={tripDateStart}
-                onChange={e => updateTripMeta('tripDateStart', e.target.value)}
+                onChange={v => updateTripMeta('tripDateStart', v)}
+                placeholder="Start date"
+                className="trip-date-input"
               />
               <span className="trip-date-sep">→</span>
-              <input
-                className="trip-date-input"
-                type="date"
+              <DatePicker
                 value={tripDateEnd}
-                onChange={e => updateTripMeta('tripDateEnd', e.target.value)}
+                onChange={v => updateTripMeta('tripDateEnd', v)}
+                placeholder="End date"
+                className="trip-date-input"
+                alignRight
               />
             </div>
           </div>
