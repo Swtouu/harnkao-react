@@ -15,6 +15,16 @@ export default async function handler(req: Request): Promise<Response> {
 
   if (!url) return new Response('url required', { status: 400 })
 
+  let parsed: URL
+  try { parsed = new URL(url) } catch {
+    return new Response('invalid url', { status: 400 })
+  }
+  if (parsed.protocol !== 'https:') return new Response('url not allowed', { status: 400 })
+  if (!parsed.hostname.endsWith('.vercel.app') && parsed.hostname !== 'harnkao.vercel.app') {
+    return new Response('url not allowed', { status: 400 })
+  }
+  if (!parsed.searchParams.has('d')) return new Response('url not allowed', { status: 400 })
+
   const r = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`)
   if (!r.ok) return new Response('Shortener failed', { status: 502 })
 
