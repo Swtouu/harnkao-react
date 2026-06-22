@@ -80,6 +80,9 @@ function ExpenseFooter({ e, people }: { e: Expense; people: string[] }) {
 export default function ExpenseCard({ expense: e, index }: Props) {
   const current             = useTripStore(s => s.current)
   const updateExpense       = useTripStore(s => s.updateExpense)
+  const tripMin = current.tripDateStart || undefined
+  const tripMax = current.tripDateEnd   || undefined
+  const dateOutOfRange = !!(e.date && ((tripMin && e.date < tripMin) || (tripMax && e.date > tripMax)))
   const removeExpense       = useTripStore(s => s.removeExpense)
   const duplicateExpense    = useTripStore(s => s.duplicateExpense)
   const toggleSplit         = useTripStore(s => s.toggleSplit)
@@ -133,7 +136,12 @@ export default function ExpenseCard({ expense: e, index }: Props) {
             onChange={v => updateExpense(e.id, 'date', v)}
             placeholder="Date"
             className="field-date"
+            min={tripMin}
+            max={tripMax}
           />
+          {dateOutOfRange && (
+            <span className="date-range-warn">Outside trip dates</span>
+          )}
 
           <input
             className="field-notes"

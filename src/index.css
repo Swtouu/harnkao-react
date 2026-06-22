@@ -131,12 +131,13 @@ body {
 }
 .trip-name-input {
   flex: 1; min-width: 120px;
+  -webkit-appearance: none; appearance: none;
   background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
   border-radius: 8px; padding: 0.32rem 0.7rem;
   color: #fff; font-size: 0.9rem; font-weight: 600;
   font-family: inherit; outline: none;
 }
-.trip-name-input::placeholder { color: rgba(255,255,255,0.45); }
+.trip-name-input::placeholder { color: rgba(255,255,255,0.65); }
 .trip-name-input:focus { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.42); }
 .trip-dates-row {
   display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;
@@ -307,6 +308,7 @@ body {
   color: #fff; font-weight: 700;
 }
 .dp-day.dp-sel:hover { opacity: 0.88; }
+.dp-day:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
 
 /* Months grid */
 .dp-months-grid {
@@ -523,6 +525,7 @@ input[type=text]:focus, input[type=number]:focus, input[type=date]:focus, select
 .field-amount { width: 100px; }
 .field-currency { width: 78px; padding-left: 0.45rem !important; }
 .field-date { width: 140px; font-size: 0.83rem !important; }
+.date-range-warn { font-size: 0.72rem; color: #e55; line-height: 1.2; }
 .field-notes { flex: 1; min-width: 0; font-size: 0.82rem; color: var(--text-hint); }
 .field-category {
   font-size: 0.79rem; padding: 0.28rem 0.5rem;

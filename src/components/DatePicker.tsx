@@ -9,6 +9,8 @@ interface Props {
   placeholder?: string
   className?: string        // applied to the trigger button (e.g. 'trip-date-input')
   alignRight?: boolean      // open popover aligned to right edge instead of left
+  min?: string              // YYYY-MM-DD — earliest selectable date
+  max?: string              // YYYY-MM-DD — latest selectable date
 }
 
 type View = 'days' | 'months' | 'years'
@@ -25,7 +27,7 @@ function toISO(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`
 }
 
-export default function DatePicker({ value, onChange, placeholder = 'Date', className, alignRight }: Props) {
+export default function DatePicker({ value, onChange, placeholder = 'Date', className, alignRight, min, max }: Props) {
   const parsed    = parseYMD(value)
   const today     = new Date()
   const todayY    = today.getFullYear()
@@ -110,14 +112,17 @@ export default function DatePicker({ value, onChange, placeholder = 'Date', clas
               <div className="dp-days-grid">
                 {Array.from({ length: firstDow }, (_, i) => <span key={`g${i}`} />)}
                 {Array.from({ length: daysInMonth }, (_, i) => {
-                  const d      = i + 1
-                  const sel    = parsed?.y === cursor.y && parsed?.m === cursor.m && parsed?.d === d
-                  const isToday = todayY === cursor.y && todayM === cursor.m && todayDay === d
+                  const d        = i + 1
+                  const iso      = toISO(cursor.y, cursor.m, d)
+                  const disabled = (!!min && iso < min) || (!!max && iso > max)
+                  const sel      = parsed?.y === cursor.y && parsed?.m === cursor.m && parsed?.d === d
+                  const isToday  = todayY === cursor.y && todayM === cursor.m && todayDay === d
                   return (
                     <button
                       key={d}
-                      className={`dp-day${sel ? ' dp-sel' : ''}${isToday && !sel ? ' dp-today' : ''}`}
+                      className={`dp-day${sel && !disabled ? ' dp-sel' : ''}${isToday && !sel ? ' dp-today' : ''}`}
                       onClick={() => pickDay(d)}
+                      disabled={disabled}
                     >{d}</button>
                   )
                 })}

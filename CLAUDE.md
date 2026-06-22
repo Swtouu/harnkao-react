@@ -28,11 +28,19 @@ React 18 + TypeScript SPA. No router — two tabs (Expenses / Summary) rendered 
 
 ### State — Zustand stores
 
-**`store/tripStore.ts`** — persisted as `hk_store` in localStorage. Holds `current: Trip` (active trip) and `trips: TripIndex[]` (index of all saved trips). Additional trips are stored separately under `hk_trip_{id}` keys; `switchTrip(id)` reads from those keys directly. Any mutation that affects balances (amount, payer, splitWith, etc.) resets `settledTransfers` to `[]`.
+**`store/tripStore.ts`** — persisted as `hk_store` in localStorage. Holds `current: Trip` (active trip) and `trips: TripIndex[]` (index of all saved trips). Additional trips are stored separately under `hk_trip_{id}` keys; `switchTrip(id)` reads from those keys directly. Any mutation that affects balances (amount, payer, splitWith, etc.) resets `settledTransfers` to `[]`. Key actions: `duplicateExpense(id)` clones an expense and inserts it after the original; `clearAllData()` removes all `hk_trip_*` keys and resets state to one empty trip.
 
 **`store/currencyStore.ts`** — persisted as `hk_currency` (display currency only). Live rates cached in `hk_rates`. Fetched from `api.exchangerate-api.com/v4/latest/THB` with a 1-hour TTL; falls back to `OFFLINE_RATES` from `constants/index.ts`.
 
 **`store/toastStore.ts`** — ephemeral, not persisted. `show(msg)` auto-dismisses after 2.8 s.
+
+### Data models
+
+`Expense` fields: `id`, `desc`, `notes` (free-text, optional), `date`, `amount`, `currency`, `currencyRate`, `payer`, `splitMode`, `splitWith`, `customAmounts`, `category`. `notes` is included in the share URL payload (key `n`, omitted when empty) and rendered in PDF export.
+
+`ExpenseCard` shows a `⧉` duplicate button (inserts clone after original) and a `.field-notes` input between the date picker and "Paid by" row.
+
+`TripsModal` has a "Reset all data" danger button at the bottom (calls `clearAllData`).
 
 ### Data flow
 
@@ -61,13 +69,22 @@ The share button lives only in the floating FAB in `App.tsx`, not in the header.
 - Arrows navigate within the current view (prev/next month, year, or 12-year block)
 - Selecting a year goes to Months; selecting a month goes to Days; selecting a day closes the picker
 
-Props: `value` (YYYY-MM-DD or `''`), `onChange`, `placeholder`, `className` (applied to the trigger button — pass `'trip-date-input'` or `'field-date'` to inherit existing visual styles), `alignRight` (opens popover aligned to right edge, used for the trip end-date to avoid going off-screen).
+Props: `value` (YYYY-MM-DD or `''`), `onChange`, `placeholder`, `className` (applied to the trigger button — pass `'trip-date-input'` or `'field-date'` to inherit existing visual styles), `alignRight` (opens popover aligned to right edge, used for the trip end-date to avoid going off-screen), `min` / `max` (YYYY-MM-DD strings — days outside the range are disabled; month/year navigation is unrestricted).
 
-Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense date).
+Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense date). `ExpenseCard` passes the trip's `tripDateStart`/`tripDateEnd` as `min`/`max` and renders a `.date-range-warn` message for expenses already outside the range.
 
 ### Share encoding
 
-`shareService.ts` gzip-compresses a compact JSON payload (single-letter keys) and base64url-encodes it into a `?d=` URL parameter. Decoded on load in `App.tsx`'s `useEffect`. `shortenUrl` calls `is.gd` (CORS-enabled).
+`shareService.ts` gzip-compresses a compact JSON payload (single-letter keys) and base64url-encodes it into a `?d=` URL parameter. Decoded on load in `App.tsx`'s `useEffect`.
+
+`ShareModal` offers three share paths:
+1. **Copy link** — copies the full `?d=` URL to clipboard; shows a native Share… button when `navigator.share` is available.
+2. **Shorten link** — POSTs the full URL to the Vercel Edge Function at `api/shorten.ts`, which proxies to `https://tinyurl.com/api-create.php` to avoid browser CORS. On success, the short URL is displayed inline with Copy and Share… buttons.
+3. **Load by ID** — loads a trip from JSONBin by ID (legacy path).
+
+`api/shorten.ts` is a Vercel Edge Function (`export const config = { runtime: 'edge' }`). It validates that TinyURL's response body starts with `http` before returning it (TinyURL returns HTTP 200 with body `"Error"` on rejection).
+
+`vercel.json` uses a negative-lookahead rewrite `/((?!api/).*)` → `/index.html` so SPA routing does not intercept `/api/*` paths.
 
 ### Analytics
 
@@ -79,7 +96,7 @@ Single global stylesheet at `src/index.css`. No CSS modules. Avatar colors `.av0
 
 ### Export
 
-`services/exportService.ts` exports `exportPDF(trip)` (self-contained HTML blob → new tab → `window.print()`) and `exportPNG(trip, el)` (lazy-loads html2canvas from CDN). Both called from `SummaryScreen.tsx`.
+`services/exportService.ts` exports `exportPDF(trip)` (self-contained HTML blob → new tab → `window.print()`) and `exportPNG(trip, el)` (lazy-loads html2canvas from CDN). Both called from `SummaryScreen.tsx`. The PDF expense table renders `desc`, `category`, and `notes` (italic, below category when present).
 
 ## localStorage keys
 
@@ -90,6 +107,10 @@ Single global stylesheet at `src/index.css`. No CSS modules. Avatar colors `.av0
 | `hk_currency` | Persisted display currency selection |
 | `hk_rates` | Cached exchange rates `{ ts: number, rates: {...} }` |
 | `hk_theme` | `'light'` or `'dark'` |
+
+## Changelog
+
+New changelog documents go in `docs/` following the naming convention: `{yyyyMMdd}_{slug}.md`.
 
 ## Remaining work
 

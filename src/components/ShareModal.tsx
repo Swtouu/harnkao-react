@@ -12,10 +12,12 @@ export default function ShareModal({ onClose }: Props) {
   const loadSharedTrip = useTripStore(s => s.loadSharedTrip)
   const showToast = useToastStore(s => s.show)
 
-  const [longUrl, setLongUrl] = useState('')
-  const [loadId, setLoadId]   = useState('')
-  const [copying, setCopying] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [longUrl, setLongUrl]     = useState('')
+  const [shortUrl, setShortUrl]   = useState('')
+  const [loadId, setLoadId]       = useState('')
+  const [copying, setCopying]     = useState(false)
+  const [shortening, setShortening] = useState(false)
+  const [loading, setLoading]     = useState(false)
 
   async function handleCopyLink() {
     setCopying(true)
@@ -29,6 +31,36 @@ export default function ShareModal({ onClose }: Props) {
       showToast('Failed to copy link.')
     } finally {
       setCopying(false)
+    }
+  }
+
+  async function handleShorten() {
+    setShortening(true)
+    setShortUrl('')
+    try {
+      const encoded = await encodeTrip(current)
+      const url = `${window.location.origin}/?d=${encoded}`
+      const res = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+      if (!res.ok) throw new Error()
+      const { short } = await res.json() as { short: string }
+      setShortUrl(short)
+    } catch {
+      showToast('Could not shorten link.')
+    } finally {
+      setShortening(false)
+    }
+  }
+
+  async function handleCopyShort() {
+    try {
+      await navigator.clipboard.writeText(shortUrl)
+      showToast('Short link copied!')
+    } catch {
+      showToast('Could not copy link.')
     }
   }
 
@@ -100,6 +132,37 @@ export default function ShareModal({ onClose }: Props) {
                 <button
                   className="btn btn-soft"
                   onClick={handleNativeShare}
+                  style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                >
+                  Share…
+                </button>
+              )}
+            </div>
+          )}
+
+          <button
+            className="btn btn-soft"
+            onClick={handleShorten}
+            disabled={shortening}
+            style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }}
+          >
+            {shortening ? 'Shortening…' : '✂️ Shorten link'}
+          </button>
+
+          {shortUrl && (
+            <div className="quick-link-row">
+              <span className="quick-link-url">{shortUrl}</span>
+              <button
+                className="btn btn-soft"
+                onClick={handleCopyShort}
+                style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+              >
+                Copy
+              </button>
+              {'share' in navigator && (
+                <button
+                  className="btn btn-soft"
+                  onClick={() => navigator.share({ title: current.tripName || 'HarnKao trip', url: shortUrl }).catch(() => {})}
                   style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
                 >
                   Share…
