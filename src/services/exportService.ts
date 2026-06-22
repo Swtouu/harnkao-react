@@ -69,7 +69,7 @@ function buildPrintHTML(trip: Trip): string {
       : 'Custom: ' + trip.people.map(p => `${p} ${fmtCur(parseFloat(e.customAmounts[p]) || 0, e.currency)}`).join(', ')
     return `<tr>
       <td style="padding:0.45rem 0.4rem;border-bottom:1px solid #EDE7F6;color:#aaa;font-size:0.8rem">${i + 1}${e.date ? `<br><span style="font-size:0.68rem">${esc(e.date)}</span>` : ''}</td>
-      <td style="padding:0.45rem 0.4rem;border-bottom:1px solid #EDE7F6;font-weight:500">${esc(e.desc || '—')}${e.category ? `<br><span style="font-size:0.68rem;color:#aaa">${esc((CAT_EMOJI[e.category] ?? '') + ' ' + e.category)}</span>` : ''}</td>
+      <td style="padding:0.45rem 0.4rem;border-bottom:1px solid #EDE7F6;font-weight:500">${esc(e.desc || '—')}${e.category ? `<br><span style="font-size:0.68rem;color:#aaa">${esc((CAT_EMOJI[e.category] ?? '') + ' ' + e.category)}</span>` : ''}${e.notes ? `<br><span style="font-size:0.68rem;color:#aaa;font-style:italic">${esc(e.notes)}</span>` : ''}</td>
       <td style="padding:0.45rem 0.4rem;border-bottom:1px solid #EDE7F6">${sym}${amt.toFixed(dec)}${amtTHB !== null && e.currency !== 'THB' ? `<br><span style="font-size:0.7rem;color:#aaa">≈฿${amtTHB.toFixed(2)}</span>` : ''}</td>
       <td style="padding:0.45rem 0.4rem;border-bottom:1px solid #EDE7F6">${esc(e.payer || '—')}</td>
       <td style="padding:0.45rem 0.4rem;border-bottom:1px solid #EDE7F6;font-size:0.78rem;color:#8674A3">${esc(splitDesc)}</td>

@@ -34,6 +34,7 @@ interface TripStore {
   removePerson: (name: string) => void
 
   addExpense: () => void
+  duplicateExpense: (id: number) => void
   removeExpense: (id: number) => void
   updateExpense: <K extends keyof Expense>(id: number, field: K, value: Expense[K]) => void
   toggleSplit: (id: number, person: string) => void
@@ -41,6 +42,7 @@ interface TripStore {
   updateCustomAmount: (id: number, person: string, value: string) => void
 
   toggleSettled: (from: string, to: string) => void
+  clearAllData: () => void
 }
 
 export const useTripStore = create<TripStore>()(
@@ -104,7 +106,7 @@ export const useTripStore = create<TripStore>()(
         const { current } = get()
         const exp: Expense = {
           id: Date.now(),
-          desc: '', date: '', amount: '',
+          desc: '', notes: '', date: '', amount: '',
           currency: 'THB', currencyRate: 1,
           payer: current.people[0] ?? '',
           splitMode: 'equal',
@@ -113,6 +115,17 @@ export const useTripStore = create<TripStore>()(
           category: ''
         }
         set(s => ({ current: { ...s.current, expenses: [...s.current.expenses, exp] } }))
+      },
+
+      duplicateExpense(id) {
+        set(s => {
+          const idx = s.current.expenses.findIndex(e => e.id === id)
+          if (idx === -1) return s
+          const clone: Expense = { ...s.current.expenses[idx], id: Date.now() }
+          const next = [...s.current.expenses]
+          next.splice(idx + 1, 0, clone)
+          return { current: { ...s.current, expenses: next, settledTransfers: [] } }
+        })
       },
 
       removeExpense(id) {
@@ -175,6 +188,13 @@ export const useTripStore = create<TripStore>()(
             settledTransfers: []
           }
         }))
+      },
+
+      clearAllData() {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('hk_trip_'))
+          .forEach(k => localStorage.removeItem(k))
+        set({ trips: [], current: emptyTrip() })
       },
 
       toggleSettled(from, to) {

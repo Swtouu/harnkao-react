@@ -523,6 +523,7 @@ input[type=text]:focus, input[type=number]:focus, input[type=date]:focus, select
 .field-amount { width: 100px; }
 .field-currency { width: 78px; padding-left: 0.45rem !important; }
 .field-date { width: 140px; font-size: 0.83rem !important; }
+.field-notes { flex: 1; min-width: 0; font-size: 0.82rem; color: var(--text-hint); }
 .field-category {
   font-size: 0.79rem; padding: 0.28rem 0.5rem;
   border-radius: 8px; border: 1.5px solid var(--border);

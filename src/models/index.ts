@@ -5,6 +5,7 @@ export type Category = '' | 'Food' | 'Hotel' | 'Transport' | 'Activity' | 'Shopp
 export interface Expense {
   id: number
   desc: string
+  notes: string
   date: string
   amount: string
   currency: string

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTripStore } from '../store/tripStore'
 import { useToastStore } from '../store/toastStore'
-import { encodeTrip, shortenUrl } from '../services/shareService'
+import { encodeTrip } from '../services/shareService'
 
 interface Props {
   onClose: () => void
@@ -12,11 +12,10 @@ export default function ShareModal({ onClose }: Props) {
   const loadSharedTrip = useTripStore(s => s.loadSharedTrip)
   const showToast = useToastStore(s => s.show)
 
-  const [longUrl, setLongUrl]   = useState('')
-  const [loadId, setLoadId]     = useState('')
-  const [copying, setCopying]   = useState(false)
-  const [shortening, setShortening] = useState(false)
-  const [loading, setLoading]   = useState(false)
+  const [longUrl, setLongUrl] = useState('')
+  const [loadId, setLoadId]   = useState('')
+  const [copying, setCopying] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   async function handleCopyLink() {
     setCopying(true)
@@ -33,17 +32,14 @@ export default function ShareModal({ onClose }: Props) {
     }
   }
 
-  async function handleShorten() {
+  async function handleNativeShare() {
     if (!longUrl) return
-    setShortening(true)
     try {
-      const short = await shortenUrl(longUrl)
-      await navigator.clipboard.writeText(short)
-      showToast('Short link copied!')
-    } catch {
-      showToast('URL shortener unavailable.')
-    } finally {
-      setShortening(false)
+      await navigator.share({ title: current.tripName || 'HarnKao trip', url: longUrl })
+    } catch (err) {
+      if (err instanceof Error && err.name !== 'AbortError') {
+        showToast('Could not open share sheet.')
+      }
     }
   }
 
@@ -100,14 +96,15 @@ export default function ShareModal({ onClose }: Props) {
           {longUrl && (
             <div className="quick-link-row">
               <span className="quick-link-url">{longUrl}</span>
-              <button
-                className="btn btn-soft"
-                onClick={handleShorten}
-                disabled={shortening}
-                style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
-              >
-                {shortening ? '…' : 'Shorten'}
-              </button>
+              {'share' in navigator && (
+                <button
+                  className="btn btn-soft"
+                  onClick={handleNativeShare}
+                  style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                >
+                  Share…
+                </button>
+              )}
             </div>
           )}
         </div>

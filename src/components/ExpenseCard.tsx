@@ -78,12 +78,13 @@ function ExpenseFooter({ e, people }: { e: Expense; people: string[] }) {
 }
 
 export default function ExpenseCard({ expense: e, index }: Props) {
-  const current            = useTripStore(s => s.current)
-  const updateExpense      = useTripStore(s => s.updateExpense)
-  const removeExpense      = useTripStore(s => s.removeExpense)
-  const toggleSplit        = useTripStore(s => s.toggleSplit)
-  const setSplitMode       = useTripStore(s => s.setSplitMode)
-  const updateCustomAmount = useTripStore(s => s.updateCustomAmount)
+  const current             = useTripStore(s => s.current)
+  const updateExpense       = useTripStore(s => s.updateExpense)
+  const removeExpense       = useTripStore(s => s.removeExpense)
+  const duplicateExpense    = useTripStore(s => s.duplicateExpense)
+  const toggleSplit         = useTripStore(s => s.toggleSplit)
+  const setSplitMode        = useTripStore(s => s.setSplitMode)
+  const updateCustomAmount  = useTripStore(s => s.updateCustomAmount)
 
   return (
     <div className="expense-card">
@@ -134,6 +135,14 @@ export default function ExpenseCard({ expense: e, index }: Props) {
             className="field-date"
           />
 
+          <input
+            className="field-notes"
+            type="text"
+            placeholder="Notes (optional)"
+            value={e.notes ?? ''}
+            onChange={ev => updateExpense(e.id, 'notes', ev.target.value)}
+          />
+
           <div className="payer-wrap">
             <span className="payer-lbl">Paid by</span>
             <select
@@ -148,6 +157,12 @@ export default function ExpenseCard({ expense: e, index }: Props) {
           </div>
         </div>
 
+        <button
+          className="btn btn-soft btn-icon"
+          onClick={() => duplicateExpense(e.id)}
+          title="Duplicate expense"
+          aria-label="Duplicate expense"
+        >⧉</button>
         <button
           className="btn btn-danger btn-icon"
           onClick={() => removeExpense(e.id)}

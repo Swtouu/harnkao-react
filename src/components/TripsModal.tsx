@@ -5,11 +5,12 @@ interface Props {
 }
 
 export default function TripsModal({ onClose }: Props) {
-  const trips      = useTripStore(s => s.trips)
-  const current    = useTripStore(s => s.current)
-  const createTrip = useTripStore(s => s.createTrip)
-  const switchTrip = useTripStore(s => s.switchTrip)
-  const deleteTrip = useTripStore(s => s.deleteTrip)
+  const trips        = useTripStore(s => s.trips)
+  const current      = useTripStore(s => s.current)
+  const createTrip   = useTripStore(s => s.createTrip)
+  const switchTrip   = useTripStore(s => s.switchTrip)
+  const deleteTrip   = useTripStore(s => s.deleteTrip)
+  const clearAllData = useTripStore(s => s.clearAllData)
 
   const sorted = [...trips].sort((a, b) => b.updatedAt - a.updatedAt)
 
@@ -27,6 +28,12 @@ export default function TripsModal({ onClose }: Props) {
     e.stopPropagation()
     if (!confirm('Delete this trip? This cannot be undone.')) return
     deleteTrip(id)
+  }
+
+  function handleClearAll() {
+    if (!confirm('Delete all trips and start fresh? This cannot be undone.')) return
+    clearAllData()
+    onClose()
   }
 
   return (
@@ -83,6 +90,18 @@ export default function TripsModal({ onClose }: Props) {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="modal-divider" />
+
+        <div className="modal-section" style={{ paddingTop: '0.75rem' }}>
+          <button
+            className="btn btn-danger"
+            onClick={handleClearAll}
+            style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }}
+          >
+            Reset all data
+          </button>
         </div>
       </div>
     </div>
