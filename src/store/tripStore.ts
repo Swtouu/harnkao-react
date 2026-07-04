@@ -83,7 +83,18 @@ export const useTripStore = create<TripStore>()(
       },
 
       loadSharedTrip(partial) {
-        set({ current: { ...emptyTrip(), ...partial } })
+        const t: Trip = { ...emptyTrip(), ...partial }
+        // union with the local copy's PAID marks so reopening a link never loses them
+        if (partial.id) {
+          const raw = localStorage.getItem(`hk_trip_${partial.id}`)
+          if (raw) {
+            try {
+              const local = JSON.parse(raw) as Trip
+              t.settledTransfers = [...new Set([...t.settledTransfers, ...local.settledTransfers])]
+            } catch { /* ignore */ }
+          }
+        }
+        set({ current: t })
       },
 
       addPerson(name) {

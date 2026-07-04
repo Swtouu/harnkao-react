@@ -38,6 +38,8 @@ React 18 + TypeScript SPA. No router — two tabs (Expenses / Summary) rendered 
 
 `Expense` fields: `id`, `desc`, `notes` (free-text, optional), `date`, `amount`, `currency`, `currencyRate`, `payer`, `splitMode`, `splitWith`, `customAmounts`, `category`. `notes` is included in the share URL payload (key `n`, omitted when empty) and rendered in PDF export.
 
+The `Category` union in `models/index.ts` is derived from `CATEGORIES` in `constants/index.ts` — to add a category, update `CATEGORIES` and `CAT_EMOJI` only. Never remove a category — existing saved trips reference them by name.
+
 `ExpenseCard` shows a `⧉` duplicate button (inserts clone after original) and a `.field-notes` input between the date picker and "Paid by" row.
 
 `TripsModal` has a "Reset all data" danger button at the bottom (calls `clearAllData`).
@@ -75,7 +77,7 @@ Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense da
 
 ### Share encoding
 
-`shareService.ts` gzip-compresses a compact JSON payload (single-letter keys) and base64url-encodes it into a `?d=` URL parameter. Decoded on load in `App.tsx`'s `useEffect`.
+`shareService.ts` gzip-compresses a compact JSON payload (single-letter keys) and base64url-encodes it into a `?d=` URL parameter. Decoded on load in `App.tsx`'s `useEffect`. The payload includes the trip id (key `i`), so opening the same link twice — or an updated re-share — overwrites the existing trip instead of creating a duplicate. It also carries `settledTransfers` (key `st`, omitted when empty); `loadSharedTrip` unions those with the local copy's marks so reopening a link never loses "paid" ticks. Links minted before these keys existed fall back to a fresh id (one duplicate per open).
 
 `ShareModal` offers two share paths:
 1. **Copy link** — copies the full `?d=` URL to clipboard; shows a native Share… button when `navigator.share` is available.

@@ -1,6 +1,8 @@
+import type { CATEGORIES } from '../constants'
+
 export type SplitMode = 'equal' | 'custom'
 
-export type Category = '' | 'Food' | 'Hotel' | 'Transport' | 'Activity' | 'Shopping' | 'Other'
+export type Category = '' | (typeof CATEGORIES)[number]
 
 export interface Expense {
   id: number

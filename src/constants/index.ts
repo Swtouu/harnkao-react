@@ -8,11 +8,15 @@ export const NODEC = new Set(['JPY', 'KRW'])
 
 export const CURRENCIES = ['THB','USD','EUR','GBP','JPY','CNY','SGD','KRW','AUD','HKD','MYR','INR']
 
-export const CATEGORIES = ['Food','Hotel','Transport','Activity','Shopping','Other'] as const
+export const CATEGORIES = [
+  'Food','Cafe','Dessert','Drinks','Groceries','Hotel','Transport',
+  'Flight','Activity','Entertainment','Shopping','Health','Gift','Other'
+] as const
 
 export const CAT_EMOJI: Record<string, string> = {
-  Food: '🍽', Hotel: '🏨', Transport: '🚗',
-  Activity: '🎡', Shopping: '🛍', Other: '📦'
+  Food: '🍽', Cafe: '☕', Dessert: '🍰', Drinks: '🍻', Groceries: '🛒',
+  Hotel: '🏨', Transport: '🚗', Flight: '✈️', Activity: '🎡',
+  Entertainment: '🎬', Shopping: '🛍', Health: '💊', Gift: '🎁', Other: '📦'
 }
 
 export const AVATAR_CLASSES = ['av0','av1','av2','av3','av4','av5','av6','av7']

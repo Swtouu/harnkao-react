@@ -1,17 +1,21 @@
 import type { Trip, Expense } from '../models'
 
 interface TripPayload {
+  i?: string
   p: string[]
   e: Array<{
     d: string; a: string; dt: string; cur: string; cr: number | null
     py: string; sm: string; sw: string[]; ca: Record<string, string>; cat: string; n?: string
   }>
   tn: string; ts: string; te: string
+  st?: string[]
 }
 
 function toPayload(trip: Trip): TripPayload {
   return {
+    i: trip.id,
     p: trip.people,
+    ...(trip.settledTransfers.length ? { st: trip.settledTransfers } : {}),
     e: trip.expenses.map(e => ({
       d: e.desc, a: e.amount, dt: e.date, cur: e.currency,
       cr: e.currencyRate, py: e.payer, sm: e.splitMode,
@@ -43,6 +47,8 @@ export async function decodeTrip(b64: string): Promise<Partial<Trip>> {
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
 
   return {
+    // carry the id so reopening the same link updates the trip instead of duplicating it
+    ...(typeof r.i === 'string' && r.i ? { id: r.i } : {}),
     people: strings(r.p),
     expenses: (Array.isArray(r.e) ? r.e : []).map((x, i): Expense => ({
       id: Date.now() + i,
@@ -53,7 +59,8 @@ export async function decodeTrip(b64: string): Promise<Partial<Trip>> {
       customAmounts: x.ca && typeof x.ca === 'object' ? x.ca : {},
       category: (x.cat as Expense['category']) ?? '', notes: x.n ?? ''
     })),
-    tripName: r.tn ?? '', tripDateStart: r.ts ?? '', tripDateEnd: r.te ?? ''
+    tripName: r.tn ?? '', tripDateStart: r.ts ?? '', tripDateEnd: r.te ?? '',
+    settledTransfers: strings(r.st)
   }
 }
 
