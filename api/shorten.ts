@@ -20,7 +20,7 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response('invalid url', { status: 400 })
   }
   if (parsed.protocol !== 'https:') return new Response('url not allowed', { status: 400 })
-  if (!parsed.hostname.endsWith('.vercel.app') && parsed.hostname !== 'harnkao.vercel.app') {
+  if (parsed.hostname !== 'harnkao.vercel.app') {
     return new Response('url not allowed', { status: 400 })
   }
   if (!parsed.searchParams.has('d')) return new Response('url not allowed', { status: 400 })

@@ -82,13 +82,17 @@ Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense da
 2. **Shorten link** — POSTs the full URL to the Vercel Edge Function at `api/shorten.ts`, which proxies to `https://tinyurl.com/api-create.php` to avoid browser CORS. On success, the short URL is displayed inline with Copy and Share… buttons.
 3. **Load by ID** — loads a trip from JSONBin by ID (legacy path).
 
-`api/shorten.ts` is a Vercel Edge Function (`export const config = { runtime: 'edge' }`). It validates that TinyURL's response body starts with `http` before returning it (TinyURL returns HTTP 200 with body `"Error"` on rejection).
+`api/shorten.ts` is a Vercel Edge Function (`export const config = { runtime: 'edge' }`). Before proxying to TinyURL it validates: protocol must be `https:`, hostname must be exactly `harnkao.vercel.app`, and a `?d=` query param must be present. It also validates that TinyURL's response body starts with `http` before returning it (TinyURL returns HTTP 200 with body `"Error"` on rejection).
 
 `vercel.json` uses a negative-lookahead rewrite `/((?!api/).*)` → `/index.html` so SPA routing does not intercept `/api/*` paths.
 
 ### Analytics
 
 `@vercel/analytics/react` — `<Analytics />` is mounted in `main.tsx` alongside `<App />`. No-op locally; activates automatically on Vercel.
+
+### React Query
+
+`@tanstack/react-query` is installed and `QueryClientProvider` wraps the app in `main.tsx` (staleTime 1 hour), but no `useQuery` hooks are currently used anywhere — the currency refresh is handled directly in `currencyStore.ts` via Zustand.
 
 ### CSS
 

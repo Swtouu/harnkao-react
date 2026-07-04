@@ -15,9 +15,11 @@ export default function ShareModal({ onClose }: Props) {
   const [longUrl, setLongUrl]     = useState('')
   const [shortUrl, setShortUrl]   = useState('')
   const [loadId, setLoadId]       = useState('')
+  const [savedId, setSavedId]     = useState('')
   const [copying, setCopying]     = useState(false)
   const [shortening, setShortening] = useState(false)
   const [loading, setLoading]     = useState(false)
+  const [saving, setSaving]       = useState(false)
 
   async function handleCopyLink() {
     setCopying(true)
@@ -75,6 +77,34 @@ export default function ShareModal({ onClose }: Props) {
     }
   }
 
+  async function handleSaveToJsonbin() {
+    setSaving(true)
+    setSavedId('')
+    try {
+      const payload = {
+        people: current.people,
+        expenses: current.expenses,
+        tripName: current.tripName,
+        tripDateStart: current.tripDateStart,
+        tripDateEnd: current.tripDateEnd,
+      }
+      const res = await fetch('/api/save-trip', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error()
+      const { id } = await res.json() as { id: string }
+      setSavedId(id)
+      await navigator.clipboard.writeText(id).catch(() => {})
+      showToast('Trip saved! ID copied.')
+    } catch {
+      showToast('Could not save trip.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleLoadById() {
     const id = loadId.trim()
     if (!id) return
@@ -128,6 +158,13 @@ export default function ShareModal({ onClose }: Props) {
           {longUrl && (
             <div className="quick-link-row">
               <span className="quick-link-url">{longUrl}</span>
+              <button
+                className="btn btn-soft"
+                onClick={() => navigator.clipboard.writeText(longUrl).then(() => showToast('Link copied!')).catch(() => showToast('Could not copy.'))}
+                style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+              >
+                Copy
+              </button>
               {'share' in navigator && (
                 <button
                   className="btn btn-soft"
@@ -168,6 +205,33 @@ export default function ShareModal({ onClose }: Props) {
                   Share…
                 </button>
               )}
+            </div>
+          )}
+        </div>
+
+        <div className="modal-divider" />
+
+        <div className="modal-section">
+          <div className="modal-section-label">☁️ Save trip — get a shareable ID</div>
+          <p className="modal-desc">Saves the trip to the cloud and gives you a short ID to share. Anyone can load it by ID.</p>
+          <button
+            className="btn btn-primary"
+            onClick={handleSaveToJsonbin}
+            disabled={saving}
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            {saving ? 'Saving…' : 'Save trip & copy ID'}
+          </button>
+          {savedId && (
+            <div className="quick-link-row" style={{ marginTop: '0.5rem' }}>
+              <span className="quick-link-url">{savedId}</span>
+              <button
+                className="btn btn-soft"
+                onClick={() => navigator.clipboard.writeText(savedId).then(() => showToast('ID copied!')).catch(() => showToast('Could not copy.'))}
+                style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+              >
+                Copy
+              </button>
             </div>
           )}
         </div>
