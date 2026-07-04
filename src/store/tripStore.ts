@@ -18,7 +18,7 @@ function emptyTrip(): Trip {
   }
 }
 
-const BALANCE_FIELDS = new Set<keyof Expense>(['amount', 'currency', 'payer', 'splitWith', 'customAmounts'])
+const BALANCE_FIELDS = new Set<keyof Expense>(['amount', 'currency', 'currencyRate', 'payer', 'splitWith', 'customAmounts'])
 
 interface TripStore {
   trips: TripIndex[]
@@ -52,11 +52,7 @@ export const useTripStore = create<TripStore>()(
       current: emptyTrip(),
 
       createTrip() {
-        const t = emptyTrip()
-        set(s => ({
-          current: t,
-          trips: [{ id: t.id, name: 'New trip', updatedAt: Date.now() }, ...s.trips]
-        }))
+        set({ current: emptyTrip() })
       },
 
       switchTrip(id) {
@@ -68,7 +64,18 @@ export const useTripStore = create<TripStore>()(
 
       deleteTrip(id) {
         localStorage.removeItem(`hk_trip_${id}`)
-        set(s => ({ trips: s.trips.filter(t => t.id !== id) }))
+        set(s => {
+          const trips = s.trips.filter(t => t.id !== id)
+          if (id !== s.current.id) return { trips }
+          // deleted the active trip — switch to the most recent remaining one
+          const latest = [...trips].sort((a, b) => b.updatedAt - a.updatedAt)[0]
+          let current = emptyTrip()
+          if (latest) {
+            const raw = localStorage.getItem(`hk_trip_${latest.id}`)
+            if (raw) { try { current = JSON.parse(raw) as Trip } catch { /* ignore */ } }
+          }
+          return { trips, current }
+        })
       },
 
       updateTripMeta(field, value) {
@@ -76,11 +83,7 @@ export const useTripStore = create<TripStore>()(
       },
 
       loadSharedTrip(partial) {
-        const t: Trip = { ...emptyTrip(), ...partial }
-        set(s => ({
-          current: t,
-          trips: [{ id: t.id, name: t.tripName || 'Shared trip', updatedAt: Date.now() }, ...s.trips]
-        }))
+        set({ current: { ...emptyTrip(), ...partial } })
       },
 
       addPerson(name) {
@@ -213,3 +216,17 @@ export const useTripStore = create<TripStore>()(
     }
   )
 )
+
+// Persist current to hk_trip_{id} and upsert its index entry on every change
+useTripStore.subscribe((s, prev) => {
+  if (s.current === prev.current || !s.current.id) return
+  localStorage.setItem(`hk_trip_${s.current.id}`, JSON.stringify(s.current))
+  const entry: TripIndex = { id: s.current.id, name: s.current.tripName, updatedAt: Date.now() }
+  useTripStore.setState(st => {
+    const i = st.trips.findIndex(t => t.id === entry.id)
+    if (i === -1) return { trips: [entry, ...st.trips] }
+    const trips = [...st.trips]
+    trips[i] = entry
+    return { trips }
+  })
+})

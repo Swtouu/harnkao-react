@@ -80,6 +80,7 @@ function ExpenseFooter({ e, people }: { e: Expense; people: string[] }) {
 export default function ExpenseCard({ expense: e, index }: Props) {
   const current             = useTripStore(s => s.current)
   const updateExpense       = useTripStore(s => s.updateExpense)
+  const rates               = useCurrencyStore(s => s.rates)
   const tripMin = current.tripDateStart || undefined
   const tripMax = current.tripDateEnd   || undefined
   const dateOutOfRange = !!(e.date && ((tripMin && e.date < tripMin) || (tripMax && e.date > tripMax)))
@@ -125,7 +126,12 @@ export default function ExpenseCard({ expense: e, index }: Props) {
             <select
               className="field-currency"
               value={e.currency}
-              onChange={ev => updateExpense(e.id, 'currency', ev.target.value)}
+              onChange={ev => {
+                const cur = ev.target.value
+                updateExpense(e.id, 'currency', cur)
+                // pin the THB rate at selection time; null triggers the rate-unavailable warning
+                updateExpense(e.id, 'currencyRate', cur === 'THB' ? 1 : rates[cur] ?? null)
+              }}
             >
               {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>

@@ -179,7 +179,7 @@ async function loadHtml2Canvas(): Promise<Html2CanvasFn> {
 
 export async function exportPNG(trip: Trip, summaryEl: HTMLElement): Promise<void> {
   const h2c   = await loadHtml2Canvas()
-  const theme = document.querySelector('.app')?.getAttribute('data-theme') ?? 'light'
+  const theme = document.documentElement.getAttribute('data-theme') ?? 'light'
   const bgVar = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#ffffff'
 
   const canvas = await h2c(summaryEl, {
@@ -187,7 +187,7 @@ export async function exportPNG(trip: Trip, summaryEl: HTMLElement): Promise<voi
     useCORS: true,
     backgroundColor: bgVar,
     onclone(doc: Document) {
-      doc.querySelector('.app')?.setAttribute('data-theme', theme)
+      doc.documentElement.setAttribute('data-theme', theme)
       doc.querySelectorAll('.export-bar').forEach((el) => {
         (el as HTMLElement).style.display = 'none'
       })

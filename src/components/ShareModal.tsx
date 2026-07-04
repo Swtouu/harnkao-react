@@ -9,17 +9,12 @@ interface Props {
 
 export default function ShareModal({ onClose }: Props) {
   const current   = useTripStore(s => s.current)
-  const loadSharedTrip = useTripStore(s => s.loadSharedTrip)
   const showToast = useToastStore(s => s.show)
 
   const [longUrl, setLongUrl]     = useState('')
   const [shortUrl, setShortUrl]   = useState('')
-  const [loadId, setLoadId]       = useState('')
-  const [savedId, setSavedId]     = useState('')
   const [copying, setCopying]     = useState(false)
   const [shortening, setShortening] = useState(false)
-  const [loading, setLoading]     = useState(false)
-  const [saving, setSaving]       = useState(false)
 
   async function handleCopyLink() {
     setCopying(true)
@@ -74,52 +69,6 @@ export default function ShareModal({ onClose }: Props) {
       if (err instanceof Error && err.name !== 'AbortError') {
         showToast('Could not open share sheet.')
       }
-    }
-  }
-
-  async function handleSaveToJsonbin() {
-    setSaving(true)
-    setSavedId('')
-    try {
-      const payload = {
-        people: current.people,
-        expenses: current.expenses,
-        tripName: current.tripName,
-        tripDateStart: current.tripDateStart,
-        tripDateEnd: current.tripDateEnd,
-      }
-      const res = await fetch('/api/save-trip', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error()
-      const { id } = await res.json() as { id: string }
-      setSavedId(id)
-      await navigator.clipboard.writeText(id).catch(() => {})
-      showToast('Trip saved! ID copied.')
-    } catch {
-      showToast('Could not save trip.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function handleLoadById() {
-    const id = loadId.trim()
-    if (!id) return
-    setLoading(true)
-    try {
-      const res  = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(id)}/latest`)
-      if (!res.ok) throw new Error('not found')
-      const data = await res.json() as { record: Record<string, unknown> }
-      loadSharedTrip(data.record as Parameters<typeof loadSharedTrip>[0])
-      showToast('Trip loaded!')
-      onClose()
-    } catch {
-      showToast('Could not load trip — check the ID.')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -209,55 +158,6 @@ export default function ShareModal({ onClose }: Props) {
           )}
         </div>
 
-        <div className="modal-divider" />
-
-        <div className="modal-section">
-          <div className="modal-section-label">☁️ Save trip — get a shareable ID</div>
-          <p className="modal-desc">Saves the trip to the cloud and gives you a short ID to share. Anyone can load it by ID.</p>
-          <button
-            className="btn btn-primary"
-            onClick={handleSaveToJsonbin}
-            disabled={saving}
-            style={{ width: '100%', justifyContent: 'center' }}
-          >
-            {saving ? 'Saving…' : 'Save trip & copy ID'}
-          </button>
-          {savedId && (
-            <div className="quick-link-row" style={{ marginTop: '0.5rem' }}>
-              <span className="quick-link-url">{savedId}</span>
-              <button
-                className="btn btn-soft"
-                onClick={() => navigator.clipboard.writeText(savedId).then(() => showToast('ID copied!')).catch(() => showToast('Could not copy.'))}
-                style={{ flexShrink: 0, fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
-              >
-                Copy
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="modal-divider" />
-
-        <div className="modal-section">
-          <div className="modal-section-label">📥 Load a trip by ID</div>
-          <p className="modal-desc">Have a Trip ID from a friend? Paste it below.</p>
-          <div className="load-trip-row">
-            <input
-              type="text"
-              placeholder="Paste Trip ID here…"
-              value={loadId}
-              onChange={e => setLoadId(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLoadById()}
-            />
-            <button
-              className="btn btn-soft"
-              onClick={handleLoadById}
-              disabled={loading || !loadId.trim()}
-            >
-              {loading ? 'Loading…' : 'Load trip'}
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   )

@@ -39,14 +39,18 @@ export async function decodeTrip(b64: string): Promise<Partial<Trip>> {
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
   const r: TripPayload = JSON.parse(await new Response(stream).text())
 
+  const strings = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
+
   return {
-    people: r.p ?? [],
-    expenses: (r.e ?? []).map((x, i): Expense => ({
+    people: strings(r.p),
+    expenses: (Array.isArray(r.e) ? r.e : []).map((x, i): Expense => ({
       id: Date.now() + i,
       desc: x.d ?? '', date: x.dt ?? '', amount: x.a ?? '',
-      currency: x.cur ?? 'THB', currencyRate: x.cr ?? null,
+      currency: x.cur ?? 'THB', currencyRate: typeof x.cr === 'number' ? x.cr : null,
       payer: x.py ?? '', splitMode: (x.sm as Expense['splitMode']) ?? 'equal',
-      splitWith: x.sw ?? [], customAmounts: x.ca ?? {},
+      splitWith: strings(x.sw),
+      customAmounts: x.ca && typeof x.ca === 'object' ? x.ca : {},
       category: (x.cat as Expense['category']) ?? '', notes: x.n ?? ''
     })),
     tripName: r.tn ?? '', tripDateStart: r.ts ?? '', tripDateEnd: r.te ?? ''

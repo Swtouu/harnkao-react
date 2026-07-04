@@ -28,7 +28,7 @@ React 18 + TypeScript SPA. No router — two tabs (Expenses / Summary) rendered 
 
 ### State — Zustand stores
 
-**`store/tripStore.ts`** — persisted as `hk_store` in localStorage. Holds `current: Trip` (active trip) and `trips: TripIndex[]` (index of all saved trips). Additional trips are stored separately under `hk_trip_{id}` keys; `switchTrip(id)` reads from those keys directly. Any mutation that affects balances (amount, payer, splitWith, etc.) resets `settledTransfers` to `[]`. Key actions: `duplicateExpense(id)` clones an expense and inserts it after the original; `clearAllData()` removes all `hk_trip_*` keys and resets state to one empty trip.
+**`store/tripStore.ts`** — persisted as `hk_store` in localStorage. Holds `current: Trip` (active trip) and `trips: TripIndex[]` (index of all saved trips). A `subscribe` call at the bottom of the file fires on every `current` change: it writes the trip to `hk_trip_{id}` **and** upserts the index entry (name + `updatedAt`) — this is the only place the index is maintained; actions never touch `trips` directly except `deleteTrip`. `switchTrip(id)` reads from the `hk_trip_{id}` keys to restore a previous trip. `deleteTrip` of the active trip switches `current` to the most recent remaining trip (or a fresh empty one). Any mutation that affects balances (amount, currency, currencyRate, payer, splitWith, customAmounts) resets `settledTransfers` to `[]`. Key actions: `duplicateExpense(id)` clones an expense and inserts it after the original; `clearAllData()` removes all `hk_trip_*` keys and resets state to one empty trip.
 
 **`store/currencyStore.ts`** — persisted as `hk_currency` (display currency only). Live rates cached in `hk_rates`. Fetched from `api.exchangerate-api.com/v4/latest/THB` with a 1-hour TTL; falls back to `OFFLINE_RATES` from `constants/index.ts`.
 
@@ -44,7 +44,7 @@ React 18 + TypeScript SPA. No router — two tabs (Expenses / Summary) rendered 
 
 ### Data flow
 
-All monetary values are stored in the expense's native currency (`Expense.amount` as string, `Expense.currency`, `Expense.currencyRate`). Settlement math always converts to THB first: `amtTHB = parseFloat(amount) / currencyRate`. `formatTHB()` in `currencyService.ts` converts THB → display currency for rendering.
+All monetary values are stored in the expense's native currency (`Expense.amount` as string, `Expense.currency`, `Expense.currencyRate`). `currencyRate` is "foreign units per 1 THB", pinned at the moment the user picks the currency in `ExpenseCard` (from the currency store's rates; `null` if unavailable, which triggers the rate-unavailable warning and excludes the expense from settlement). Settlement math always converts to THB first: `amtTHB = parseFloat(amount) / currencyRate`. `formatTHB()` in `currencyService.ts` converts THB → display currency for rendering.
 
 ### Key invariant — settlement math
 
@@ -77,10 +77,9 @@ Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense da
 
 `shareService.ts` gzip-compresses a compact JSON payload (single-letter keys) and base64url-encodes it into a `?d=` URL parameter. Decoded on load in `App.tsx`'s `useEffect`.
 
-`ShareModal` offers three share paths:
+`ShareModal` offers two share paths:
 1. **Copy link** — copies the full `?d=` URL to clipboard; shows a native Share… button when `navigator.share` is available.
 2. **Shorten link** — POSTs the full URL to the Vercel Edge Function at `api/shorten.ts`, which proxies to `https://tinyurl.com/api-create.php` to avoid browser CORS. On success, the short URL is displayed inline with Copy and Share… buttons.
-3. **Load by ID** — loads a trip from JSONBin by ID (legacy path).
 
 `api/shorten.ts` is a Vercel Edge Function (`export const config = { runtime: 'edge' }`). Before proxying to TinyURL it validates: protocol must be `https:`, hostname must be exactly `harnkao.vercel.app`, and a `?d=` query param must be present. It also validates that TinyURL's response body starts with `http` before returning it (TinyURL returns HTTP 200 with body `"Error"` on rejection).
 
@@ -89,10 +88,6 @@ Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense da
 ### Analytics
 
 `@vercel/analytics/react` — `<Analytics />` is mounted in `main.tsx` alongside `<App />`. No-op locally; activates automatically on Vercel.
-
-### React Query
-
-`@tanstack/react-query` is installed and `QueryClientProvider` wraps the app in `main.tsx` (staleTime 1 hour), but no `useQuery` hooks are currently used anywhere — the currency refresh is handled directly in `currencyStore.ts` via Zustand.
 
 ### CSS
 
@@ -118,4 +113,4 @@ New changelog documents go in `docs/` following the naming convention: `{yyyyMMd
 
 ## Remaining work
 
-All web features are complete. The only remaining item is Capacitor / iOS App Store submission — see `TODO.md` for the command sequence.
+All web features are complete.
