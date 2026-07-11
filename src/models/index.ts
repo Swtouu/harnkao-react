@@ -27,6 +27,7 @@ export interface Trip {
   people: string[]
   expenses: Expense[]
   settledTransfers: string[]
+  promptPay: Record<string, string>
 }
 
 export interface TripIndex {

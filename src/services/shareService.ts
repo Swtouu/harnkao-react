@@ -9,6 +9,7 @@ interface TripPayload {
   }>
   tn: string; ts: string; te: string
   st?: string[]
+  pp?: Record<string, string>
 }
 
 function toPayload(trip: Trip): TripPayload {
@@ -16,6 +17,7 @@ function toPayload(trip: Trip): TripPayload {
     i: trip.id,
     p: trip.people,
     ...(trip.settledTransfers.length ? { st: trip.settledTransfers } : {}),
+    ...(Object.keys(trip.promptPay ?? {}).length ? { pp: trip.promptPay } : {}),
     e: trip.expenses.map(e => ({
       d: e.desc, a: e.amount, dt: e.date, cur: e.currency,
       cr: e.currencyRate, py: e.payer, sm: e.splitMode,
@@ -60,7 +62,8 @@ export async function decodeTrip(b64: string): Promise<Partial<Trip>> {
       category: (x.cat as Expense['category']) ?? '', notes: x.n ?? ''
     })),
     tripName: r.tn ?? '', tripDateStart: r.ts ?? '', tripDateEnd: r.te ?? '',
-    settledTransfers: strings(r.st)
+    settledTransfers: strings(r.st),
+    promptPay: r.pp && typeof r.pp === 'object' && !Array.isArray(r.pp) ? r.pp : {}
   }
 }
 

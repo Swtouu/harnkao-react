@@ -75,6 +75,10 @@ Props: `value` (YYYY-MM-DD or `''`), `onChange`, `placeholder`, `className` (app
 
 Used in `AppHeader.tsx` (trip start/end dates) and `ExpenseCard.tsx` (expense date). `ExpenseCard` passes the trip's `tripDateStart`/`tripDateEnd` as `min`/`max` and renders a `.date-range-warn` message for expenses already outside the range.
 
+### PromptPay QR
+
+`Trip.promptPay` maps person name → PromptPay ID (10-digit phone, 13-digit national ID, or 15-digit e-wallet). `services/promptpayService.ts` builds the EMVCo QR payload (TLV + CRC-16/CCITT-FALSE, same format as the promptpay-qr reference lib); `components/PromptPayModal.tsx` renders it via the `qrcode` npm package (which uses its `"browser"` package.json field — Vite picks it up automatically, no pngjs bundled). Each unsettled settlement row in `SettlementList` shows a "📱 QR" button — the modal prompts for the recipient's number on first use (saved to the trip via `setPromptPay`), then shows a scannable QR with the THB amount embedded. `promptPay` travels in the share payload (key `pp`, omitted when empty). `loadSharedTrip` merges it with the local copy's entries (local takes priority) so a user's own numbers survive when opening a friend's updated share link. Older saved trips lack the field — `switchTrip`/`deleteTrip` backfill by spreading over `emptyTrip()`.
+
 ### Share encoding
 
 `shareService.ts` gzip-compresses a compact JSON payload (single-letter keys) and base64url-encodes it into a `?d=` URL parameter. Decoded on load in `App.tsx`'s `useEffect`. The payload includes the trip id (key `i`), so opening the same link twice — or an updated re-share — overwrites the existing trip instead of creating a duplicate. It also carries `settledTransfers` (key `st`, omitted when empty); `loadSharedTrip` unions those with the local copy's marks so reopening a link never loses "paid" ticks. Links minted before these keys existed fall back to a fresh id (one duplicate per open).

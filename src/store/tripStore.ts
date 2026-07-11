@@ -14,7 +14,8 @@ function emptyTrip(): Trip {
     tripDateEnd: '',
     people: [],
     expenses: [],
-    settledTransfers: []
+    settledTransfers: [],
+    promptPay: {}
   }
 }
 
@@ -32,6 +33,7 @@ interface TripStore {
 
   addPerson: (name: string) => void
   removePerson: (name: string) => void
+  setPromptPay: (name: string, id: string) => void
 
   addExpense: () => void
   duplicateExpense: (id: number) => void
@@ -58,7 +60,8 @@ export const useTripStore = create<TripStore>()(
       switchTrip(id) {
         const raw = localStorage.getItem(`hk_trip_${id}`)
         if (raw) {
-          try { set({ current: JSON.parse(raw) as Trip }) } catch { /* ignore */ }
+          // spread over emptyTrip to backfill fields missing from older saves
+          try { set({ current: { ...emptyTrip(), ...JSON.parse(raw) as Trip } }) } catch { /* ignore */ }
         }
       },
 
@@ -72,7 +75,7 @@ export const useTripStore = create<TripStore>()(
           let current = emptyTrip()
           if (latest) {
             const raw = localStorage.getItem(`hk_trip_${latest.id}`)
-            if (raw) { try { current = JSON.parse(raw) as Trip } catch { /* ignore */ } }
+            if (raw) { try { current = { ...emptyTrip(), ...JSON.parse(raw) as Trip } } catch { /* ignore */ } }
           }
           return { trips, current }
         })
@@ -91,6 +94,8 @@ export const useTripStore = create<TripStore>()(
             try {
               const local = JSON.parse(raw) as Trip
               t.settledTransfers = [...new Set([...t.settledTransfers, ...local.settledTransfers])]
+              // local numbers take priority — the incoming share may not have them
+              t.promptPay = { ...(t.promptPay ?? {}), ...(local.promptPay ?? {}) }
             } catch { /* ignore */ }
           }
         }
@@ -102,18 +107,32 @@ export const useTripStore = create<TripStore>()(
       },
 
       removePerson(name) {
-        set(s => ({
-          current: {
-            ...s.current,
-            people: s.current.people.filter(p => p !== name),
-            expenses: s.current.expenses.map(e => ({
-              ...e,
-              payer: e.payer === name ? '' : e.payer,
-              splitWith: e.splitWith.filter(p => p !== name)
-            })),
-            settledTransfers: []
+        set(s => {
+          const promptPay = { ...s.current.promptPay }
+          delete promptPay[name]
+          return {
+            current: {
+              ...s.current,
+              people: s.current.people.filter(p => p !== name),
+              expenses: s.current.expenses.map(e => ({
+                ...e,
+                payer: e.payer === name ? '' : e.payer,
+                splitWith: e.splitWith.filter(p => p !== name)
+              })),
+              settledTransfers: [],
+              promptPay
+            }
           }
-        }))
+        })
+      },
+
+      setPromptPay(name, id) {
+        set(s => {
+          const promptPay = { ...s.current.promptPay }
+          if (id) promptPay[name] = id
+          else delete promptPay[name]
+          return { current: { ...s.current, promptPay } }
+        })
       },
 
       addExpense() {

@@ -12,6 +12,7 @@ No account required. All data stays in your browser.
 - **Flexible splitting** — split each expense equally among selected people, or enter custom amounts per person with a live balance check
 - **Multi-currency** — 12 currencies with live exchange rates (1-hour cache, offline estimates as fallback); each expense pins its rate at entry time
 - **Settlement calculator** — computes the minimum number of transfers to settle all debts; mark individual transfers as paid
+- **PromptPay QR** — tap 📱 QR on any transfer to show a scannable Thai PromptPay QR with the exact amount pre-filled; works with any Thai banking app
 - **Summary dashboard** — total spent, per-person balances, and spending breakdown by category
 - **Share via URL** — the whole trip is gzip-compressed into a single link; no server stores your data. Optional link shortening via TinyURL. Opening an updated link for the same trip updates it in place (no duplicates)
 - **Export** — print-ready PDF or PNG image of the trip summary
@@ -32,6 +33,7 @@ No account required. All data stays in your browser.
 - **No accounts, no sign-up, no tracking of your expense data.** Everything you enter lives in your browser's localStorage and never touches a database.
 - **Share links are self-contained.** The trip data is compressed into the URL itself — nothing is uploaded when you create a link. Anyone you send the link to gets their own independent local copy. Note that anyone with the link can read the trip data, so share it like you'd share the information itself.
 - **Opening a link updates your copy.** If you already have the trip a link refers to, opening it replaces your local version with the link's version (your "paid" ticks are kept). Only open trip links from people you're actually splitting with.
+- **PromptPay numbers travel with the trip.** If you save PromptPay numbers, they're included in share links so friends can pay you — only share the link within the group.
 - **Link shortening is optional.** If you use "Shorten link", the full URL (including trip data) is sent to TinyURL to create the short alias.
 - **Exchange rates** are fetched from exchangerate-api.com — the request contains no trip data.
 - The site uses Vercel Analytics for anonymous page-view counts only.
