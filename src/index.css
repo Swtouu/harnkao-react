@@ -678,6 +678,19 @@ input[type=text]:focus, input[type=number]:focus, input[type=date]:focus, select
 }
 [data-theme='dark'] .settlement-row .amount { background: rgba(200,152,80,0.18); }
 
+/* Ledger list — neutral styling (no warning color) to read as reference, not a to-do */
+.ledger-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.4rem; }
+.ledger-row {
+  display: flex; align-items: center; gap: 0.45rem;
+  padding: 0.5rem 0.85rem; border-radius: 12px; font-size: 0.84rem;
+  background: var(--surface2); border: 1px solid var(--border-soft);
+  flex-wrap: wrap;
+}
+.ledger-row .arrow { color: var(--text-hint); flex-shrink: 0; }
+.ledger-row .from,
+.ledger-row .to { font-weight: 600; }
+.ledger-row .amount { font-weight: 700; color: var(--text-muted); margin-left: auto; }
+
 /* Category breakdown */
 .cat-breakdown { display: flex; flex-direction: column; gap: 0.5rem; }
 .cat-bar-row { display: flex; align-items: center; gap: 0.55rem; }

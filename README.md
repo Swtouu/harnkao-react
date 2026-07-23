@@ -9,6 +9,7 @@ No account required. All data stays in your browser.
 ## Features
 
 - **People & expenses** — add trip members, log expenses with description, amount, date, notes, and one of 14 categories (Food, Cafe, Dessert, Drinks, Groceries, Hotel, Transport, Flight, Activity, Entertainment, Shopping, Health, Gift, Other)
+- **Scan a receipt** — tap "📷 Scan receipt", pick or photograph a bill, and the app reads the total, date, and merchant name off it with on-device OCR (English + Thai) and starts a new expense pre-filled with them. The image is processed entirely in your browser and never uploaded; double-check the detected fields since OCR isn't perfect
 - **Flexible splitting** — split each expense equally among selected people, or enter custom amounts per person with a live balance check
 - **Multi-currency** — 12 currencies with live exchange rates (1-hour cache, offline estimates as fallback); each expense pins its rate at entry time
 - **Settlement calculator** — computes the minimum number of transfers to settle all debts; mark individual transfers as paid
@@ -22,7 +23,7 @@ No account required. All data stays in your browser.
 ## How to use
 
 1. **Add people** — on the Expenses tab, type each person's name and press Enter.
-2. **Add expenses** — click "+ Add expense", fill in what it was, the amount and currency, who paid, and how to split it (Equal or Custom). Category, date, and notes are optional.
+2. **Add expenses** — click "+ Add expense", fill in what it was, the amount and currency, who paid, and how to split it (Equal or Custom). Category, date, and notes are optional. Or tap "📷 Scan receipt" to start an expense with the amount pre-filled from a photo.
 3. **Check the summary** — the Summary tab shows total spent, per-person balances, category breakdown, and exactly who should pay whom.
 4. **Settle up** — as people pay each other back, tick off the transfers. Editing any amount resets the settled marks, since the math changed.
 5. **Share** — hit "Share trip", copy the link (or shorten it), and send it to your friends. Opening the link loads the full trip into their browser.

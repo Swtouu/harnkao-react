@@ -35,7 +35,7 @@ interface TripStore {
   removePerson: (name: string) => void
   setPromptPay: (name: string, id: string) => void
 
-  addExpense: () => void
+  addExpense: (fields?: Partial<Pick<Expense, 'amount' | 'date' | 'desc'>>) => void
   duplicateExpense: (id: number) => void
   removeExpense: (id: number) => void
   updateExpense: <K extends keyof Expense>(id: number, field: K, value: Expense[K]) => void
@@ -135,11 +135,11 @@ export const useTripStore = create<TripStore>()(
         })
       },
 
-      addExpense() {
+      addExpense(fields) {
         const { current } = get()
         const exp: Expense = {
           id: Date.now(),
-          desc: '', notes: '', date: '', amount: '',
+          desc: fields?.desc ?? '', notes: '', date: fields?.date ?? '', amount: fields?.amount ?? '',
           currency: 'THB', currencyRate: 1,
           payer: current.people[0] ?? '',
           splitMode: 'equal',
@@ -147,7 +147,14 @@ export const useTripStore = create<TripStore>()(
           customAmounts: {},
           category: ''
         }
-        set(s => ({ current: { ...s.current, expenses: [...s.current.expenses, exp] } }))
+        set(s => ({
+          current: {
+            ...s.current,
+            expenses: [...s.current.expenses, exp],
+            // a receipt-scanned amount is immediately balance-affecting — same invariant as updateExpense's BALANCE_FIELDS
+            settledTransfers: fields?.amount ? [] : s.current.settledTransfers
+          }
+        }))
       },
 
       duplicateExpense(id) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import TripScreen from './screens/TripScreen'
 import SummaryScreen from './screens/SummaryScreen'
+import LedgerScreen from './screens/LedgerScreen'
 import AppHeader from './components/AppHeader'
 import RateBanner from './components/RateBanner'
 import Toast from './components/Toast'
@@ -10,7 +11,7 @@ import { useCurrencyStore } from './store/currencyStore'
 import { useExchangeRates } from './hooks/useExchangeRates'
 import { decodeTrip } from './services/shareService'
 
-type Tab = 'expenses' | 'summary'
+type Tab = 'expenses' | 'summary' | 'ledger'
 
 export default function App() {
   const [tab, setTab]         = useState<Tab>('expenses')
@@ -67,12 +68,18 @@ export default function App() {
         >
           Summary
         </button>
+        <button
+          className={tab === 'ledger' ? 'active' : ''}
+          onClick={() => setTab('ledger')}
+        >
+          Ledger
+        </button>
       </nav>
       </div>
 
       <main className="app-main">
         {displayCurrency !== 'THB' && <RateBanner />}
-        {tab === 'expenses' ? <TripScreen /> : <SummaryScreen />}
+        {tab === 'expenses' ? <TripScreen /> : tab === 'summary' ? <SummaryScreen /> : <LedgerScreen />}
       </main>
 
       <button className="share-fab" onClick={() => setShareOpen(true)}>

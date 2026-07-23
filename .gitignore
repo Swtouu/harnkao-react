@@ -17,3 +17,9 @@ dist/
 
 # vite
 vite.config.ts.timestamp-*
+
+# typescript incremental build cache (tsconfig.node.json is composite)
+*.tsbuildinfo
+
+# vercel cli local project link
+.vercel
